@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="Copyright (c) 2015, 2016 Denis Nikiforov.&#xD;&#xA;All rights reserved. This program and the accompanying materials&#xD;&#xA;are made available under the terms of the Eclipse Public License v1.0&#xD;&#xA;which accompanies this distribution, and is available at&#xD;&#xA;http://www.eclipse.org/legal/epl-v10.html&#xD;&#xA;&#xD;&#xA;Contributors:&#xD;&#xA;   Denis Nikiforov - initial API and implementation"
+    modelDirectory="/eaeu.cm/src-gen" editDirectory="/eaeu.cm.edit/src-gen" editorDirectory="/eaeu.cm.editor/src-gen"
+    modelPluginID="eaeu.cm" modelName="CM" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    testsDirectory="/eaeu.cm.tests/src-gen" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="8.0" copyrightFields="false" runtimeVersion="2.10" operationReflection="true"
+    importOrganizing="true">
+  <foreignModel>cm.ecore</foreignModel>
+  <genPackages prefix="CM" basePackage="eaeu" disposableProviderFactory="true" ecorePackage="cm.ecore#/">
+    <genClasses ecoreClass="cm.ecore#//Model">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference cm.ecore#//Model/elements"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference cm.ecore#//Model/base"/>
+    </genClasses>
+    <genClasses ecoreClass="cm.ecore#//GlobalElement">
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference cm.ecore#//GlobalElement/model"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//GlobalElement/domain"/>
+    </genClasses>
+    <genClasses ecoreClass="cm.ecore#//NamedElement">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//NamedElement/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//NamedElement/definition"/>
+    </genClasses>
+    <genClasses ecoreClass="cm.ecore#//MultiplicityElement" labelFeature="#//cm/MultiplicityElement/bounds">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//MultiplicityElement/lower"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//MultiplicityElement/upper"/>
+      <genFeatures property="Readonly" createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//MultiplicityElement/bounds"/>
+    </genClasses>
+    <genClasses ecoreClass="cm.ecore#//Concept">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference cm.ecore#//Concept/general"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference cm.ecore#//Concept/attributes"/>
+    </genClasses>
+    <genClasses ecoreClass="cm.ecore#//Property"/>
+    <genClasses ecoreClass="cm.ecore#//Role" labelFeature="#//cm/Role/label">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference cm.ecore#//Role/concept"/>
+      <genFeatures property="Readonly" createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//Role/label"/>
+    </genClasses>
+    <genClasses ecoreClass="cm.ecore#//Relation" labelFeature="#//cm/Relation/label">
+      <genFeatures property="None" createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//Relation/label"/>
+      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference cm.ecore#//Relation/ends"/>
+    </genClasses>
+    <genClasses ecoreClass="cm.ecore#//Attribute" labelFeature="#//cm/Attribute/label">
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference cm.ecore#//Attribute/concept"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference cm.ecore#//Attribute/property"/>
+      <genFeatures property="None" createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//Attribute/label"/>
+    </genClasses>
+    <genClasses ecoreClass="cm.ecore#//RelationEnd" labelFeature="#//cm/RelationEnd/label">
+      <genFeatures property="None" notify="false" createChild="false" propertySortChoices="true"
+          ecoreFeature="ecore:EReference cm.ecore#//RelationEnd/relation"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference cm.ecore#//RelationEnd/role"/>
+      <genFeatures property="None" createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//RelationEnd/label"/>
+    </genClasses>
+    <genClasses ecoreClass="cm.ecore#//Element">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//Element/analogs"/>
+    </genClasses>
+    <genClasses ecoreClass="cm.ecore#//LocalElement">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute cm.ecore#//LocalElement/definition"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

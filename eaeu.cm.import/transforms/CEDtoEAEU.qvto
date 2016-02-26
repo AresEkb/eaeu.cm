@@ -1,0 +1,146 @@
+import Helpers;
+
+modeltype UML 'strict' uses 'http://www.eclipse.org/uml2/3.0.0/UML';
+modeltype CED uses 'http://www.example.org/eaeu/ced';
+
+transformation CEDtoEAEU(in c : CED, in list : UML, out m : UML);
+
+property datamodels : Set(Model) = list.rootObjects()![Model].packageImport.importedPackage[Model]->asSet();
+property profile : Profile = datamodels.profileApplication.appliedProfile->any(name = profileName);
+
+main()
+{
+    c.objectsOfType(Document)->toModel();
+}
+
+mapping CED::Document::toModel() : Model
+{
+    name := 'Documents';
+    result.applyProfile(profile);
+    result.applyStereotype('RegistryV');
+    self->toNamespace(result);
+}
+
+mapping CED::Document::toNamespace(owner : Package) : Package
+{
+    nestingPackage := owner;
+    name := self.getElementName();
+    result.applyStereotype('Namespace');
+    self->toComplexElement(result);
+}
+
+mapping CED::Document::toComplexElement(owner : Package) : Class
+{
+    package := owner;
+    name := self.getElementName();
+    result.applyStereotype('ComplexElement');
+    ownedAttribute := object Property {
+    	name := 'value';
+    	type := self.xmap toComplexType(owner);
+    };
+}
+
+mapping CED::Document::toComplexType(owner : Package) : DataType
+{
+    package := owner;
+    name := self.getTypeName();
+    result.applyStereotype('ComplexType');
+    self.components->toComponent(result);
+    self.allSubobjects()[CED::Component]->toConstraint(result);
+}
+
+mapping CED::Component::toComponent(owner : DataType) : Property
+{
+    _datatype := owner;
+    type := self.getRealization();
+    name := type.name;
+    lower := self.lower;
+    upper := self.upper;
+    if (self.definition.notEmpty()) {
+        ownedComment := object Comment {
+            annotatedElement := result;
+            body := self.definition;
+        };
+    };
+    result.applyStereotype('Component');
+}
+
+mapping CED::Component::toConstraint(owner : DataType) : Constraint
+disjuncts
+    CED::Component::toProhibitedConstraint,
+    CED::Component::toRequiredConstraint
+{
+}
+
+mapping CED::Component::toProhibitedConstraint(owner : DataType) : Constraint
+when { self.lower = 0 and self.upper = 0 }
+{
+    context := owner;
+    constrainedElement := owner;
+    name := 'constraint'.incrStrCounter('constraint').toString();
+    ownedComment := object Comment {
+        annotatedElement := result;
+    	body := 'реквизит ' + self.getRussianPath() + ' не заполняется';
+        log(body->any(true));
+    };
+    specification := object OpaqueExpression {
+        language := 'OCL';
+    	body := self.getPath() + '->isEmpty()';
+    	log(body->any(true));
+    };
+}
+
+mapping CED::Component::toRequiredConstraint(owner : DataType) : Constraint
+when { self.lower > 0 and self.getComponentRealization().lower = 0 }
+{
+    context := owner;
+    constrainedElement := owner;
+    name := 'constraint'.incrStrCounter('constraint').toString();
+    ownedComment := object Comment {
+        annotatedElement := result;
+        body := 'реквизит ' + self.getRussianPath() + ' должен быть заполнен';
+        log(body->any(true));
+    };
+    specification := object OpaqueExpression {
+        language := 'OCL';
+        body := self.getPath() + '->notEmpty()';
+        log(body->any(true));
+    };
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Helpers
+
+query CED::Element::getElementName() : String =
+	self.name.tokenize(' ').toFirstUpper()->sep('') + 'Details';
+
+query CED::Element::getTypeName() : String =
+	self.getElementName() + 'Type';
+
+query CED::Component::getPath() : String =
+    self->asOrderedSet()->closure(container![CED::DataSet])
+        ->prepend(self).getRealization()
+        ->collect(el|el.name+'.value')
+        ->reverseSep('.');
+
+query CED::Component::getRussianPath() : String =
+    self->asOrderedSet()->closure(container![CED::DataSet])
+        ->prepend(self).getRealization()
+        ->collect(el|'«' + el.getBusinessName() + '» (' + el.getQName() + ')')
+        ->sep(' в составе реквизита ');
+
+query CED::Component::getRealization() : Class =
+    let standardId = self.getRealizations()->any(true) in
+    datamodels.allOwnedElements()[Class]->any(getStandardId() = standardId);
+
+query CED::Component::getComponentRealization() : Property =
+    let el = self.getRealization() in
+    self.container![CED::DataSet].getRealization().ownedAttribute
+        ->any(name = 'value').type[DataType].ownedAttribute->any(type = el);
+
+abstract query CED::Component::getRealizations() : Set(String);
+query CED::DataElement::getRealizations() : Set(String) = self._property.analogs;
+query CED::DataSet::getRealizations() : Set(String) = self.role.analogs;
+
+helper Element::applyStereotype(stereotypeName : String) : Stereotype =
+    self.applyStereotype(profile, stereotypeName);

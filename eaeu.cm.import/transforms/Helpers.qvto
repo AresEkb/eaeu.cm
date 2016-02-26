@@ -1,0 +1,113 @@
+modeltype UML uses 'http://www.eclipse.org/uml2/3.0.0/UML';
+
+library Helpers;
+
+property profileName : String = 'EECProfile';
+
+///////////////////////////////////////////////////////////////////////////////
+// Helpers
+
+query Element::getStandardId() : String =
+    self.getValue('EECDataModel', 'standardId');
+
+query Element::getBusinessName() : String =
+    self.getValue('EECDataModel', 'businessName');
+
+query Element::getDocumentation() : String =
+    self.ownedComment.body->any(notEmpty()).clean();
+
+query Element::getModelName() : String =
+    let model = self.getModel() in
+    if model.is('rModel') then 'Базисная модель'
+    else model.getValue('EECDataModel', 'standardName') endif;
+
+///////////////////////////////////////////////////////////////////////////////
+// Strings
+
+query String::notEmpty() : Boolean = not self.oclIsUndefined() and self.length() > 0;
+
+query String::quote() : String = '\'' + self.replaceAll('\'', '\'\'') + '\'';
+
+query coalesce(arg1 : String, arg2 : String) : String =
+    if arg1 <> null and not(arg1.oclIsInvalid()) and arg1.size() > 0 then arg1 else arg2 endif;
+
+query Sequence(String)::sep(separator : String) : String =
+    self->iterate(str; res : String = '' | if res = '' then str else res + separator + str endif);
+
+query Sequence(String)::reverseSep(separator : String) : String =
+    self->iterate(str; res : String = '' | if res = '' then str else str + separator + res endif);
+
+query String::clean() : String =
+    self.replaceAll('<p[^>]*>', '').replaceAll('</p>', '\n')
+        .replaceAll('<br>', '\n')
+        .replaceAll('<[^>]+>', '')
+        .replaceAll('&nbsp;', ' ').replaceAll('\r\n', '\n').replaceAll('\n', ' ')
+        .replaceAll('\\s{2,}', ' ').trim();
+
+query String::toFirstUpper() : String =
+    self.substring(1, 1).toUpperCase() + self.substring(2, self.size()).toLowerCase();
+
+///////////////////////////////////////////////////////////////////////////////
+// Stereotypes
+
+query Package::isNamespace() : Boolean =
+    self.getAppliedStereotype('EECProfile::Namespace') <> null;
+
+query Element::is(stereotypeName : String) : Boolean = self.is(profileName, stereotypeName);
+
+query Element::is(profileName : String, stereotypeName : String) : Boolean =
+    self.getAppliedStereotypes()->union(self.getAppliedStereotypes().allParents().oclAsType(Stereotype))
+        ->select(owner.oclAsType(Profile).name = profileName)
+        ->exists(name = stereotypeName);
+
+query NamedElement::getNameWithStereotypes() : String =
+    '<' + self.getAppliedStereotypes().name->sortedBy(str|str)->sep(',') + '> ' + self.name;
+
+query Element::getValue(stereotypeName : String, propertyName : String) : String =
+    let stereotype : Stereotype = self.getAppliedStereotype(profileName + '::' + stereotypeName) in
+    if stereotype.oclIsUndefined() then null else
+        let value : String = self.getValue(stereotype, propertyName).oclAsType(String) in
+        if not value.oclIsUndefined() and value.size() > 0 then value else null endif
+        endif;
+
+query Profile::getStereotype(name : String) : Stereotype
+{
+    var st := self.ownedStereotype->any(st|st.name = name);
+    assert fatal (st <> null) with log('Stereotype ' + name + ' not found');
+    return st;
+}
+
+helper Element::applyStereotype(profile : Profile, stereotypeName : String) : Stereotype
+{
+    var st := profile.getStereotype(stereotypeName);
+    self.applyStereotype(st);
+    return st;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// EAEU
+
+query Element::getNS() : Package = self.getNearestPackage().getNS();
+
+query Package::getNS() : Package =
+      if self.getAppliedStereotype(profileName + '::Namespace') <> null then self
+    elif self.owner <> null then self.owner.getNS()
+    else null
+    endif;
+
+query Package::getTargetNS() : String = self.getValue('Namespace', 'name');
+query Package::getTargetNSPrefix() : String = self.getValue('Namespace', 'prefix');
+query Package::getTargetNSVersion() : String = self.getValue('Namespace', 'version');
+
+query NamedElement::getNSWithGuards() : Package
+{
+    assert fatal (self.getQualifiedName() <> null)
+        with log('Unable to resolve element \'' + self.toString() + '\'');
+    var ns := self.getNS();
+    assert fatal (ns <> null)
+        with log('Namespace of a \'' + self.getQualifiedName() + '\' not found');
+    return ns;
+}
+
+query NamedElement::getQName() : String =
+    self.getNSWithGuards().getTargetNSPrefix() + ':' + self.name;

@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<description:Group xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:description="http://www.eclipse.org/sirius/description/1.1.0" xmlns:description_1="http://www.eclipse.org/sirius/diagram/description/1.1.0" xmlns:description_2="http://www.eclipse.org/sirius/table/description/1.1.0" xmlns:filter="http://www.eclipse.org/sirius/diagram/description/filter/1.1.0" xmlns:style="http://www.eclipse.org/sirius/diagram/description/style/1.1.0" xmlns:tool="http://www.eclipse.org/sirius/description/tool/1.1.0" xmlns:tool_1="http://www.eclipse.org/sirius/diagram/description/tool/1.1.0" xmlns:validation="http://www.eclipse.org/sirius/description/validation/1.1.0" name="ced" version="10.1.3.201511131800">
+  <ownedViewpoints name="cm" label="Концептуальная модель" modelFileExtension="cm">
+    <ownedRepresentations xsi:type="description_1:DiagramDescription" name="CMDiagram" initialisation="true" domainClass="cm.Model" enablePopupBars="true">
+      <defaultLayer name="Default">
+        <edgeMappings name="Relation" sourceMapping="//@ownedViewpoints[name='cm']/@ownedRepresentations[name='CMDiagram']/@defaultLayer/@containerMappings[name='Concept']" targetMapping="//@ownedViewpoints[name='cm']/@ownedRepresentations[name='CMDiagram']/@defaultLayer/@containerMappings[name='Concept']" targetFinderExpression="aql:self.ends->at(2).role.concept" sourceFinderExpression="aql:self.ends->at(1).role.concept" domainClass="cm.Relation" useDomainElement="true">
+          <style targetArrow="NoDecoration" routingStyle="manhattan">
+            <strokeColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            <beginLabelStyleDescription showIcon="false" labelExpression="aql:let role = self.ends->at(1).role in if role.name &lt;> null and role.name.size() > 0 and not (role.name = role.concept.name) then role.name else '' endif">
+              <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            </beginLabelStyleDescription>
+            <endLabelStyleDescription showIcon="false" labelExpression="aql:let role = self.ends->at(2).role in if role.name &lt;> null and role.name.size() > 0 and not (role.name = role.concept.name) then role.name else '' endif">
+              <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            </endLabelStyleDescription>
+          </style>
+        </edgeMappings>
+        <containerMappings name="Concept" domainClass="cm.Concept" childrenPresentation="List">
+          <subNodeMappings name="Attribute" semanticCandidatesExpression="feature:attributes" domainClass="cm.Attribute">
+            <style xsi:type="style:SquareDescription" showIcon="false" labelExpression="feature:label" labelAlignment="LEFT" labelPosition="node" resizeKind="NSEW">
+              <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+              <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+              <color xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='gray']"/>
+            </style>
+          </subNodeMappings>
+          <style xsi:type="style:FlatContainerStyleDescription" borderSizeComputationExpression="1" showIcon="false">
+            <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            <backgroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='white']"/>
+            <foregroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='white']"/>
+          </style>
+        </containerMappings>
+        <toolSections/>
+      </defaultLayer>
+    </ownedRepresentations>
+  </ownedViewpoints>
+  <ownedViewpoints name="ced" label="Концептуальная структура электронного документа" modelFileExtension="ced">
+    <ownedRepresentations xsi:type="description_1:DiagramDescription" name="diagram" label="Проектирование" initialisation="true" domainClass="ced.Document" enablePopupBars="true">
+      <filters xsi:type="filter:CompositeFilterDescription" name="HideProhibitedDataElements" label="Скрыть удалённые свойства">
+        <filters xsi:type="filter:MappingFilter" mappings="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='Document']/@subNodeMappings[name='DataElement']" semanticConditionExpression="aql:not(self.lower = 0 and self.upper = 0)"/>
+      </filters>
+      <validationSet>
+        <ownedRules xsi:type="validation:SemanticValidationRule" name="DataSetMustBeHarmonized" message="Новые сущности должны быть перенесены в концептуальную модель" targetClass="ced.DataSet">
+          <audits auditExpression="aql:self.role &lt;> null"/>
+        </ownedRules>
+        <ownedRules xsi:type="validation:SemanticValidationRule" name="DataElementMustBeHarmonized" message="Новые свойства должны быть перенесены в концептуальную модель" targetClass="ced.DataElement">
+          <audits auditExpression="aql:self.container.oclIsKindOf(ced::DataSet) and self.container.oclAsType(ced::DataSet).role &lt;> null implies self.property &lt;> null and self.container.oclAsType(ced::DataSet).role.concept.attributes.property->includes(self.property)"/>
+          <fixes name="Удалить свойство">
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:RemoveElement"/>
+            </initialOperation>
+          </fixes>
+        </ownedRules>
+        <ownedRules xsi:type="validation:SemanticValidationRule" name="DataSetNameOverriden" level="ERROR" message="Имена сущностей не должны переопределяться" targetClass="ced.DataSet">
+          <audits auditExpression="aql:self.role &lt;> null implies self.name = null or self.name.size() = 0"/>
+          <fixes name="Удалить имя">
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:Unset" featureName="name"/>
+            </initialOperation>
+          </fixes>
+        </ownedRules>
+        <ownedRules xsi:type="validation:SemanticValidationRule" name="DataElementNameOverriden" level="ERROR" message="Имена элементов данных не должны переопределяться" targetClass="ced.DataElement">
+          <audits auditExpression="aql:self.property &lt;> null implies self.name = null or self.name.size() = 0"/>
+          <fixes name="Удалить имя">
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:Unset" featureName="name"/>
+            </initialOperation>
+          </fixes>
+        </ownedRules>
+        <ownedRules xsi:type="validation:SemanticValidationRule" name="DataElementsOutOfSync" level="ERROR" message="Свойства объекта должны быть синхронизированы с концептуальной моделью" targetClass="ced.DataSet">
+          <audits auditExpression="aql:self.role &lt;> null implies let s1 = self.components->select(c : ced::DataElement | c.oclIsKindOf(ced::DataElement)).property in let s2 = self.role.concept.attributes.property in s1->includesAll(s2)"/>
+          <fixes name="Добавить недостающие свойства">
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:ExternalJavaAction" name="test" id="eaeu.ced.design.SyncDataElementsAction"/>
+            </initialOperation>
+          </fixes>
+        </ownedRules>
+      </validationSet>
+      <layout xsi:type="description_1:OrderedTreeLayout" childrenExpression="feature:components" nodeMapping="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='Document'] //@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='DataSet']"/>
+      <defaultLayer name="Default">
+        <edgeMappings name="Container" label="Часть-целое" sourceMapping="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='DataSet']" targetMapping="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='Document'] //@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='DataSet']" targetFinderExpression="feature:container">
+          <style targetArrow="FillDiamond" routingStyle="tree" endsCentering="Both">
+            <strokeColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            <beginLabelStyleDescription showIcon="false" labelExpression="aql:self.bounds">
+              <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            </beginLabelStyleDescription>
+          </style>
+        </edgeMappings>
+        <containerMappings name="Document" label="Документ" deletionDescription="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@toolSections.0/@ownedTools[name='DeleteDocument']" labelDirectEdit="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@toolSections.0/@ownedTools[name='RenameDocument']" semanticCandidatesExpression="var:self" domainClass="ced.Document" childrenPresentation="List">
+          <subNodeMappings name="DataElement" label="Элемент данных" deletionDescription="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@toolSections.1/@ownedTools[name='DeleteProperty']" labelDirectEdit="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@toolSections.1/@ownedTools[name='RenameProperty']" semanticCandidatesExpression="feature:components" domainClass="ced.DataElement">
+            <style xsi:type="style:SquareDescription" showIcon="false" labelExpression="aql:self.label + '     ' + self.bounds" labelAlignment="LEFT" labelPosition="node" resizeKind="NSEW">
+              <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+              <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+              <color xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='gray']"/>
+            </style>
+            <conditionnalStyles predicateExpression="aql:self.container.oclIsKindOf(ced::DataSet) and not self.container->select(ds : ced::DataSet | ds.oclIsKindOf(ced::DataSet)).role.concept.attributes.property->includes(self.property)">
+              <style xsi:type="style:SquareDescription" showIcon="false" labelExpression="aql:self.label + '     ' + self.bounds" labelAlignment="LEFT" labelPosition="node" resizeKind="NSEW">
+                <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+                <labelFormat>italic</labelFormat>
+                <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+                <color xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='gray']"/>
+              </style>
+            </conditionnalStyles>
+            <conditionnalStyles predicateExpression="aql:self.lower = 0 and self.upper = 0">
+              <style xsi:type="style:SquareDescription" showIcon="false" labelExpression="feature:label" labelAlignment="LEFT" labelPosition="node" resizeKind="NSEW">
+                <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+                <labelFormat>strike_through</labelFormat>
+                <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+                <color xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='gray']"/>
+              </style>
+            </conditionnalStyles>
+          </subNodeMappings>
+          <style xsi:type="style:FlatContainerStyleDescription" borderSizeComputationExpression="1" showIcon="false">
+            <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            <backgroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='white']"/>
+            <foregroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='white']"/>
+          </style>
+        </containerMappings>
+        <containerMappings name="DataSet" label="Набор данных" labelDirectEdit="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@toolSections.0/@ownedTools[name='RenameConcept']" domainClass="ced.DataSet" reusedNodeMappings="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='Document']/@subNodeMappings[name='DataElement']" childrenPresentation="List">
+          <style xsi:type="style:FlatContainerStyleDescription" borderSizeComputationExpression="1" showIcon="false" labelExpression="feature:label">
+            <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+            <backgroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='white']"/>
+            <foregroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='white']"/>
+          </style>
+          <conditionnalStyles predicateExpression="aql:self.role = null">
+            <style xsi:type="style:FlatContainerStyleDescription" borderSizeComputationExpression="1" showIcon="false" labelExpression="feature:label">
+              <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+              <labelFormat>italic</labelFormat>
+              <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+              <backgroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='white']"/>
+              <foregroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='white']"/>
+            </style>
+          </conditionnalStyles>
+        </containerMappings>
+        <toolSections name="ConceptTools" label="Data sets">
+          <ownedTools xsi:type="tool:SelectionWizardDescription" name="AddAllowedConcepts" label="Add allowed data sets" precondition="aql:self.oclIsKindOf(ced::DataSet) and self.oclAsType(ced::DataSet).role &lt;> null" candidatesExpression="aql:self.oclAsType(ced::DataSet).allowedRelationEnds" multiple="true" iconPath="/eaeu.ced.design/icons/AllowedConcept.gif">
+            <element name="element"/>
+            <containerView name="containerView"/>
+            <container name="container"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:For" expression="var:element" iteratorName="relationEnd">
+                <subModelOperations xsi:type="tool:ChangeContext" browseExpression="var:container">
+                  <subModelOperations xsi:type="tool:CreateInstance" typeName="ced.DataSet" referenceName="components" variableName="dataSet">
+                    <subModelOperations xsi:type="tool:SetValue" featureName="role" valueExpression="aql:relationEnd.oclAsType(cm::RelationEnd).role"/>
+                    <subModelOperations xsi:type="tool:SetValue" featureName="lower" valueExpression="aql:relationEnd.oclAsType(cm::RelationEnd).lower"/>
+                    <subModelOperations xsi:type="tool:SetValue" featureName="upper" valueExpression="aql:relationEnd.oclAsType(cm::RelationEnd).upper"/>
+                    <subModelOperations xsi:type="tool:For" expression="aql:relationEnd.oclAsType(cm::RelationEnd).role.oclAsType(cm::Role).concept.attributes" iteratorName="attribute">
+                      <subModelOperations xsi:type="tool:ChangeContext" browseExpression="var:dataSet">
+                        <subModelOperations xsi:type="tool:CreateInstance" typeName="ced.DataElement" referenceName="components" variableName="dataElement">
+                          <subModelOperations xsi:type="tool:SetValue" featureName="property" valueExpression="aql:attribute.oclAsType(cm::Attribute).property"/>
+                          <subModelOperations xsi:type="tool:SetValue" featureName="lower" valueExpression="aql:attribute.oclAsType(cm::Attribute).lower"/>
+                          <subModelOperations xsi:type="tool:SetValue" featureName="upper" valueExpression="aql:attribute.oclAsType(cm::Attribute).upper"/>
+                        </subModelOperations>
+                      </subModelOperations>
+                    </subModelOperations>
+                  </subModelOperations>
+                </subModelOperations>
+              </firstModelOperations>
+            </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool:SelectionWizardDescription" name="AddAvailableConcepts" label="Add available data sets" precondition="aql:self.oclIsKindOf(ced::Container)" candidatesExpression="aql:self.oclAsType(ced::Container).availableRoles" multiple="true" iconPath="/eaeu.ced.design/icons/AvailableConcept.gif">
+            <element name="element"/>
+            <containerView name="containerView"/>
+            <container name="container"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:For" expression="var:element" iteratorName="role">
+                <subModelOperations xsi:type="tool:ChangeContext" browseExpression="var:container">
+                  <subModelOperations xsi:type="tool:CreateInstance" typeName="ced.DataSet" referenceName="components" variableName="dataSet">
+                    <subModelOperations xsi:type="tool:SetValue" featureName="role" valueExpression="var:role"/>
+                    <subModelOperations xsi:type="tool:For" expression="aql:role.oclAsType(cm::Role).concept.attributes" iteratorName="attribute">
+                      <subModelOperations xsi:type="tool:ChangeContext" browseExpression="var:dataSet">
+                        <subModelOperations xsi:type="tool:CreateInstance" typeName="ced.DataElement" referenceName="components" variableName="dataElement">
+                          <subModelOperations xsi:type="tool:SetValue" featureName="property" valueExpression="aql:attribute.oclAsType(cm::Attribute).property"/>
+                          <subModelOperations xsi:type="tool:SetValue" featureName="lower" valueExpression="aql:attribute.oclAsType(cm::Attribute).lower"/>
+                          <subModelOperations xsi:type="tool:SetValue" featureName="upper" valueExpression="aql:attribute.oclAsType(cm::Attribute).upper"/>
+                        </subModelOperations>
+                      </subModelOperations>
+                    </subModelOperations>
+                  </subModelOperations>
+                </subModelOperations>
+              </firstModelOperations>
+            </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool_1:ContainerCreationDescription" name="CreateDataSet" label="Create new data set" containerMappings="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='DataSet']" iconPath="/eaeu.ced.design/icons/NewConcept.gif" extraMappings="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='Document'] //@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='DataSet']">
+            <variable name="container"/>
+            <viewVariable name="containerView"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:ChangeContext" browseExpression="var:container">
+                <subModelOperations xsi:type="tool:CreateInstance" typeName="ced.DataSet" referenceName="components" variableName="dataSet"/>
+              </firstModelOperations>
+            </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool_1:DirectEditLabel" name="RenameDocument" label="Переименовать документ">
+            <mask mask="{0}"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:SetValue" featureName="name" valueExpression="var:arg0"/>
+            </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool_1:DirectEditLabel" name="RenameConcept" label="Переименовать сущность" precondition="aql:self.role = null">
+            <mask mask="{0}"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:SetValue" featureName="name" valueExpression="var:arg0"/>
+            </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool_1:DeleteElementDescription" name="DeleteDocument" label="Удалить документ" precondition="aql:false">
+            <element name="element"/>
+            <elementView name="elementView"/>
+            <containerView name="containerView"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:ChangeContext"/>
+            </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool:OperationAction" name="SetSuitableRealizations" label="Установить реализации">
+            <view name="views"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:ExternalJavaAction" name="SetSuitableRealizationsAction" id="eaeu.ced.design.setSuitableRealizationsAction"/>
+            </initialOperation>
+          </ownedTools>
+        </toolSections>
+        <toolSections name="PropertyTools" label="Data elements">
+          <ownedTools xsi:type="tool:SelectionWizardDescription" name="AddAllowedProperties" label="Add allowed data elements" precondition="aql:self.oclIsKindOf(ced::DataSet) and self.oclAsType(ced::DataSet).role &lt;> null" candidatesExpression="aql:self.oclAsType(ced::DataSet).allowedAttributes" multiple="true" iconPath="/eaeu.ced.design/icons/AllowedProperty.gif">
+            <element name="element"/>
+            <containerView name="containerView"/>
+            <container name="container"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:For" expression="var:element" iteratorName="attribute">
+                <subModelOperations xsi:type="tool:ChangeContext" browseExpression="aql:container.oclAsType(ced::DataSet).components->any(c : ced::DataElement | c.property = attribute.oclAsType(cm::Attribute).property)">
+                  <subModelOperations xsi:type="tool:SetValue" featureName="lower" valueExpression="aql:attribute.oclAsType(cm::Attribute).lower"/>
+                  <subModelOperations xsi:type="tool:SetValue" featureName="upper" valueExpression="aql:attribute.oclAsType(cm::Attribute).upper"/>
+                </subModelOperations>
+              </firstModelOperations>
+            </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool:SelectionWizardDescription" name="AddAvailableProperties" label="Add available data elements" precondition="aql:self.oclIsKindOf(ced::Container)" candidatesExpression="aql:self.oclAsType(ced::Container).availableProperties" multiple="true" iconPath="/eaeu.ced.design/icons/AvailableProperty.gif">
+            <element name="element"/>
+            <containerView name="containerView"/>
+            <container name="container"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:For" expression="var:element" iteratorName="property">
+                <subModelOperations xsi:type="tool:ChangeContext" browseExpression="var:container">
+                  <subModelOperations xsi:type="tool:CreateInstance" typeName="ced.DataElement" referenceName="components" variableName="dataElement">
+                    <subModelOperations xsi:type="tool:SetValue" featureName="property" valueExpression="aql:property"/>
+                  </subModelOperations>
+                </subModelOperations>
+              </firstModelOperations>
+            </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool_1:NodeCreationDescription" name="CreateProperty" label="Create new data element" nodeMappings="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='Document']/@subNodeMappings[name='DataElement']" iconPath="/eaeu.ced.design/icons/NewProperty.gif" extraMappings="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='Document'] //@ownedViewpoints[name='ced']/@ownedRepresentations[name='diagram']/@defaultLayer/@containerMappings[name='DataSet']">
+            <variable name="container"/>
+            <viewVariable name="containerView"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:ChangeContext" browseExpression="var:container">
+                <subModelOperations xsi:type="tool:CreateInstance" typeName="ced.DataElement" referenceName="components" variableName="dataElement">
+                  <subModelOperations xsi:type="tool:SetValue" featureName="name" valueExpression="..."/>
+                </subModelOperations>
+              </firstModelOperations>
+            </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool_1:DirectEditLabel" name="RenameProperty" label="Переименовать свойство" precondition="aql:self.property = null">
+            <mask mask="{0}"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:SetValue" featureName="name" valueExpression="var:arg0"/>
+            </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool_1:DeleteElementDescription" name="DeleteProperty" label="Удалить свойство">
+            <element name="element"/>
+            <elementView name="elementView"/>
+            <containerView name="containerView"/>
+            <initialOperation>
+              <firstModelOperations xsi:type="tool:ChangeContext" browseExpression="var:element">
+                <subModelOperations xsi:type="tool:If" conditionExpression="aql:self.container.oclIsKindOf(ced::DataSet) and self.property &lt;> null">
+                  <subModelOperations xsi:type="tool:SetValue" featureName="lower" valueExpression="0"/>
+                  <subModelOperations xsi:type="tool:SetValue" featureName="upper" valueExpression="0"/>
+                </subModelOperations>
+                <subModelOperations xsi:type="tool:If" conditionExpression="aql:self.container.oclIsKindOf(ced::Document) or self.property = null">
+                  <subModelOperations xsi:type="tool:RemoveElement"/>
+                </subModelOperations>
+              </firstModelOperations>
+            </initialOperation>
+          </ownedTools>
+        </toolSections>
+      </defaultLayer>
+    </ownedRepresentations>
+    <ownedRepresentations xsi:type="description_2:EditionTableDescription" name="Realization" label="Реализация" initialisation="true" domainClass="ced.Document">
+      <ownedLineMappings name="Document" label="Документ" domainClass="ced.Document" semanticCandidatesExpression="var:self">
+        <ownedSubLines name="Component" label="Компонент" reusedSubLines="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='Realization']/@ownedLineMappings[name='Document']/@ownedSubLines[name='Component']" reusedInMappings="//@ownedViewpoints[name='ced']/@ownedRepresentations[name='Realization']/@ownedLineMappings[name='Document']/@ownedSubLines[name='Component']" domainClass="ced.Component" semanticCandidatesExpression="aql:self.components">
+          <delete name="DeleteComponent" label="Удалить компонент">
+            <variables name="element" documentation="The semantic currently edited element."/>
+            <variables name="root" documentation="The semantic root element of the table."/>
+          </delete>
+        </ownedSubLines>
+        <delete name="DeleteDocument" label="Удалить документ">
+          <variables name="element" documentation="The semantic currently edited element."/>
+          <variables name="root" documentation="The semantic root element of the table."/>
+        </delete>
+      </ownedLineMappings>
+      <ownedColumnMappings name="Lower" label="Нижняя граница" headerLabelExpression="Lower" featureName="lower"/>
+      <ownedColumnMappings name="Upper" label="Верхняя граница" headerLabelExpression="Upper" featureName="upper"/>
+      <ownedColumnMappings name="Realization" label="Реализация" headerLabelExpression="Realization" featureName="realization" labelExpression="aql:if self.realization &lt;> null and self.realization.size() > 0 then self.realization else 'Создать' endif">
+        <defaultForeground labelSize="8">
+          <foreGroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
+        </defaultForeground>
+        <foregroundConditionalStyle predicateExpression="aql:self.realization &lt;> null and self.realization.size() > 0">
+          <style labelSize="8">
+            <foreGroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='dark_green']"/>
+          </style>
+        </foregroundConditionalStyle>
+        <foregroundConditionalStyle predicateExpression="aql:false">
+          <style labelSize="8">
+            <foreGroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='red']"/>
+          </style>
+        </foregroundConditionalStyle>
+      </ownedColumnMappings>
+      <ownedColumnMappings name="Definition" label="Определение" headerLabelExpression="Definition" featureName="definition" labelExpression="aql:if self.definition &lt;> null and self.definition.size() > 0 then self.definition else if self.oclIsKindOf(ced::DataSet) then self.oclAsType(ced::DataSet).role.definition else self.oclAsType(ced::DataElement).property.definition endif endif">
+        <foregroundConditionalStyle predicateExpression="aql:self.definition = null or self.definition.size() = 0">
+          <style labelSize="8">
+            <labelFormat>italic</labelFormat>
+            <foreGroundColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='gray']"/>
+          </style>
+        </foregroundConditionalStyle>
+      </ownedColumnMappings>
+    </ownedRepresentations>
+  </ownedViewpoints>
+</description:Group>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.ui.newWizards">
+      <!-- @generated ced -->
+      <category
+            id="org.eclipse.emf.ecore.Wizard.category.ID"
+            name="%_UI_Wizard_category"/>
+      <wizard
+            id="eaeu.ced.presentation.CEDModelWizardID"
+            name="%_UI_CEDModelWizard_label"
+            class="eaeu.ced.presentation.CEDModelWizard"
+            category="org.eclipse.emf.ecore.Wizard.category.ID"
+            icon="icons/full/obj16/CEDModelFile.gif">
+         <description>%_UI_CEDModelWizard_description</description>
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+   </extension>
+
+   <extension point="org.eclipse.ui.editors">
+      <!-- @generated ced -->
+      <editor
+            id="eaeu.ced.presentation.CEDEditorID"
+            name="%_UI_CEDEditor_label"
+            icon="icons/full/obj16/CEDModelFile.gif"
+            extensions="ced"
+            class="eaeu.ced.presentation.CEDEditor"
+            contributorClass="eaeu.ced.presentation.CEDActionBarContributor">
+      </editor>
+   </extension>
+
+</plugin>

@@ -1,0 +1,145 @@
+import Helpers;
+
+modeltype ECORE uses 'http://www.eclipse.org/emf/2002/Ecore';
+modeltype UML   uses 'http://www.eclipse.org/uml2/3.0.0/UML';
+modeltype CM    uses 'http://www.example.org/eaeu/cm';
+//modeltype CMM   uses 'http://www.example.org/eaeu/cmm';
+
+//transformation EAEUtoCM(in u : UML, out c : CM, out m : CMM);
+transformation EAEUtoCM(in u : UML, out c : CM);
+
+configuration property useEngNames : Boolean;
+
+main()
+{
+    u.objectsOfType(Model)->toModel();
+}
+/*
+mapping Model::toModel() : cm : CM::Model, cmm : CMM::Model
+{
+    object cm : CM::Model {
+        self.allOwnedElements()[PackageImport].importedPackage->sortedBy(name)->forEach (model) {
+            elements += model.allOwnedElements()[Classifier]->sortedBy(name)->toElement();
+            elements += model.allOwnedElements()[DataType]->sortedBy(name)->toRole();
+            elements += model.allOwnedElements()[DataType]->
+                select(is('ComplexType'))->sortedBy(name).
+                ownedAttribute->toRelation();
+        };
+    };
+    object cmm : CMM::Model {
+    	conceptual := cm;
+    };
+}
+*/
+mapping Model::toModel() : CM::Model
+{
+        self.allOwnedElements()[PackageImport].importedPackage->sortedBy(name)->forEach (model) {
+            elements += model.allOwnedElements()[Classifier]->sortedBy(name)->toElement();
+            elements += model.allOwnedElements()[DataType]->sortedBy(name)->toRole();
+            elements += model.allOwnedElements()[DataType]->
+                select(is('ComplexType'))->sortedBy(name).
+                ownedAttribute->toRelation();
+        };
+}
+
+mapping Classifier::toElement() : CM::GlobalElement
+disjuncts
+    DataType::toConcept,
+    Class::toProperty,
+    Class::toRole
+{
+}
+/*
+mapping NamedElement::toMapping(target : CM::Element) : CMM::Mapping
+{
+	logical := self.oclAsType(EObject);
+    conceptual := target;
+}
+*/
+///////////////////////////////////////////////////////////////////////////////
+// Concept mapping
+
+mapping DataType::toConcept() : CM::Concept
+when { self.is('ComplexType') }
+{
+	name := self.getName();
+	definition := self.getDocumentation();
+	domain := self.getModelName();
+    analogs := self.getStandardId();
+    general := self.generalization->reject(is('restriction')).general->any(true).late resolveone(CM::Concept);
+	attributes := self.ownedAttribute->toAttribute();
+	
+	//self->toMapping(result);
+}
+
+mapping Property::toAttribute() : CM::Attribute
+when { self.is('Component') and self.type.is('SimpleElement') }
+{
+    _property := self.type.late resolveone(CM::Property);
+    definition := self.getDocumentation();
+
+    //self->toMapping(result);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Property mapping
+
+mapping Class::toProperty() : CM::Property
+when { self.is('SimpleElement') }
+{
+    name := self.getName();
+    definition := self.getDocumentation();
+    domain := self.getModelName();
+    analogs := self.getStandardId();
+
+    //self->toMapping(result);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Role mapping
+
+mapping Class::toRole() : CM::Role
+when { self.is('ComplexElement') }
+{
+    name := self.getName();
+    definition := self.getDocumentation();
+    domain := self.getModelName();
+    concept := self.attribute->any(name = 'value').type.late resolveone(CM::Concept);
+    analogs := self.getStandardId();
+
+    //self->toMapping(result);
+}
+
+mapping DataType::toRole() : CM::Role
+when { self.is('ComplexType') }
+{
+    domain := self.getModelName();
+    concept := self.late resolveone(CM::Concept);
+
+    //self->toMapping(result);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Relation mapping
+
+mapping Property::toRelation() : CM::Relation
+when { self.is('Component') and self.type.is('ComplexElement') }
+{
+    domain := self.getModelName();
+    ends += object CM::RelationEnd {
+        role := self._datatype.late resolveone(CM::Role);
+    };
+    ends += object CM::RelationEnd {
+        role := self.type.late resolveone(CM::Role);
+    };
+
+    //self->toMapping(result);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Helpers
+
+query NamedElement::getName() : String =
+    if useEngNames
+    then self.name.replaceAll('Type$', '').replaceAll('Details$', '').replaceAll('(?<=[a-z0-9])([A-Z])', ' $1').toFirstUpper()
+    else self.getBusinessName() endif;

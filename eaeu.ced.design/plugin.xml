@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+  <extension point="org.eclipse.sirius.componentization">
+    <component class="eaeu.ced.design.Activator"
+               id="eaeu.ced.design"
+	       name="ced">
+    </component>
+  </extension>
+  <extension
+        point="org.eclipse.sirius.externalJavaAction">
+     <javaActions
+           actionClass="eaeu.ced.design.SyncDataElementsAction"
+           id="eaeu.ced.design.syncDataElementsAction">
+     </javaActions>
+  </extension>
+  <extension
+        point="org.eclipse.sirius.externalJavaAction">
+     <javaActions
+           actionClass="eaeu.ced.design.SetSuitableRealizationsAction"
+           id="eaeu.ced.design.setSuitableRealizationsAction">
+     </javaActions>
+  </extension>
+  <extension
+        point="org.eclipse.ui.commands">
+     <command
+           defaultHandler="eaeu.ced.design.SetSuitableRealizationsHandler"
+           id="eaeu.ced.design.SetSuitableRealizations"
+           name="SetSuitableRealizations">
+     </command>
+  </extension>
+  <extension
+        point="org.eclipse.ui.menus">
+     <menuContribution
+           allPopups="false"
+           locationURI="popup:org.eclipse.sirius.table.ui.EditionTableEditorID">
+        <command
+              commandId="eaeu.ced.design.SetSuitableRealizations"
+              style="push">
+        </command>
+     </menuContribution>
+  </extension>
+</plugin>
